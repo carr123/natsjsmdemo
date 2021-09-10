@@ -1,0 +1,174 @@
+goroutine profile: total 7046
+1004 @ 0x437a96 0x447832 0x89f87c 0x467ba1
+#	0x89f87b	github.com/nats-io/nats-server/v2/server.(*raft).fileWriter+0x25b	D:/project/src/github.com/nats-io/nats-server/server/raft.go:3002
+
+1001 @ 0x437a96 0x447832 0x7a7cb9 0x467ba1
+#	0x7a7cb8	github.com/nats-io/nats-server/v2/server.(*consumerFileStore).flushLoop+0x1b8	D:/project/src/github.com/nats-io/nats-server/server/filestore.go:4721
+
+1001 @ 0x437a96 0x447832 0x7fe656 0x7fd305 0x467ba1
+#	0x7fe655	github.com/nats-io/nats-server/v2/server.(*jetStream).monitorConsumer+0x4f5			D:/project/src/github.com/nats-io/nats-server/server/jetstream_cluster.go:2861
+#	0x7fd304	github.com/nats-io/nats-server/v2/server.(*jetStream).processClusterCreateConsumer.func1+0x24	D:/project/src/github.com/nats-io/nats-server/server/jetstream_cluster.go:2691
+
+1000 @ 0x437a96 0x43043e 0x462509 0x4b4f32 0x4b5e9a 0x4b5e88 0x5718a9 0x57d4c5 0x752427 0x840da9 0x467ba1
+#	0x462508	internal/poll.runtime_pollWait+0x88						c:/go/src/runtime/netpoll.go:229
+#	0x4b4f31	internal/poll.(*pollDesc).wait+0x31						c:/go/src/internal/poll/fd_poll_runtime.go:84
+#	0x4b5e99	internal/poll.(*pollDesc).waitRead+0x259					c:/go/src/internal/poll/fd_poll_runtime.go:89
+#	0x4b5e87	internal/poll.(*FD).Read+0x247							c:/go/src/internal/poll/fd_unix.go:167
+#	0x5718a8	net.(*netFD).Read+0x28								c:/go/src/net/fd_posix.go:56
+#	0x57d4c4	net.(*conn).Read+0x44								c:/go/src/net/net.go:183
+#	0x752426	github.com/nats-io/nats-server/v2/server.(*client).readLoop+0x5a6		D:/project/src/github.com/nats-io/nats-server/server/client.go:1134
+#	0x840da8	github.com/nats-io/nats-server/v2/server.(*Server).createMQTTClient.func1+0x28	D:/project/src/github.com/nats-io/nats-server/server/mqtt.go:515
+
+1000 @ 0x437a96 0x463e9d 0x463e7d 0x478cac 0x7519b5 0x840d5d 0x467ba1
+#	0x463e7c	sync.runtime_notifyListWait+0x11c						c:/go/src/runtime/sema.go:513
+#	0x478cab	sync.(*Cond).Wait+0x8b								c:/go/src/sync/cond.go:56
+#	0x7519b4	github.com/nats-io/nats-server/v2/server.(*client).writeLoop+0x1f4		D:/project/src/github.com/nats-io/nats-server/server/client.go:997
+#	0x840d5c	github.com/nats-io/nats-server/v2/server.(*Server).createMQTTClient.func2+0x1c	D:/project/src/github.com/nats-io/nats-server/server/mqtt.go:516
+
+506 @ 0x437a96 0x447832 0x897105 0x894d91 0x467ba1
+#	0x897104	github.com/nats-io/nats-server/v2/server.(*raft).runAsLeader+0x5a4	D:/project/src/github.com/nats-io/nats-server/server/raft.go:1744
+#	0x894d90	github.com/nats-io/nats-server/v2/server.(*raft).run+0xd0		D:/project/src/github.com/nats-io/nats-server/server/raft.go:1420
+
+505 @ 0x437a96 0x447832 0x771851 0x467ba1
+#	0x771850	github.com/nats-io/nats-server/v2/server.(*consumer).loopAndForwardProposals+0x170	D:/project/src/github.com/nats-io/nats-server/server/consumer.go:1273
+
+505 @ 0x437a96 0x447832 0x776549 0x467ba1
+#	0x776548	github.com/nats-io/nats-server/v2/server.(*consumer).loopAndGatherMsgs+0x448	D:/project/src/github.com/nats-io/nats-server/server/consumer.go:2260
+
+498 @ 0x437a96 0x447832 0x8956aa 0x894d85 0x467ba1
+#	0x8956a9	github.com/nats-io/nats-server/v2/server.(*raft).runAsFollower+0x129	D:/project/src/github.com/nats-io/nats-server/server/raft.go:1462
+#	0x894d84	github.com/nats-io/nats-server/v2/server.(*raft).run+0xc4		D:/project/src/github.com/nats-io/nats-server/server/raft.go:1416
+
+3 @ 0x437a96 0x43043e 0x462509 0x4b4f32 0x4b6d8c 0x4b6d79 0x572a75 0x586da8 0x5860dd 0x8c6909 0x467ba1
+#	0x462508	internal/poll.runtime_pollWait+0x88						c:/go/src/runtime/netpoll.go:229
+#	0x4b4f31	internal/poll.(*pollDesc).wait+0x31						c:/go/src/internal/poll/fd_poll_runtime.go:84
+#	0x4b6d8b	internal/poll.(*pollDesc).waitRead+0x22b					c:/go/src/internal/poll/fd_poll_runtime.go:89
+#	0x4b6d78	internal/poll.(*FD).Accept+0x218						c:/go/src/internal/poll/fd_unix.go:402
+#	0x572a74	net.(*netFD).accept+0x34							c:/go/src/net/fd_unix.go:173
+#	0x586da7	net.(*TCPListener).accept+0x27							c:/go/src/net/tcpsock_posix.go:140
+#	0x5860dc	net.(*TCPListener).Accept+0x3c							c:/go/src/net/tcpsock.go:262
+#	0x8c6908	github.com/nats-io/nats-server/v2/server.(*Server).acceptConnections+0x68	D:/project/src/github.com/nats-io/nats-server/server/server.go:2007
+
+2 @ 0x437a96 0x447832 0x7f2b0f 0x7fabe8 0x467ba1
+#	0x7f2b0e	github.com/nats-io/nats-server/v2/server.(*jetStream).monitorStream+0xa0e			D:/project/src/github.com/nats-io/nats-server/server/jetstream_cluster.go:1439
+#	0x7fabe7	github.com/nats-io/nats-server/v2/server.(*jetStream).processClusterCreateStream.func1+0x27	D:/project/src/github.com/nats-io/nats-server/server/jetstream_cluster.go:2290
+
+2 @ 0x437a96 0x447832 0x8e318b 0x467ba1
+#	0x8e318a	github.com/nats-io/nats-server/v2/server.(*stream).internalLoop+0x22a	D:/project/src/github.com/nats-io/nats-server/server/stream.go:3006
+
+2 @ 0x437a96 0x463e9d 0x463e7d 0x478cac 0x7519b5 0x8b7a9d 0x467ba1
+#	0x463e7c	sync.runtime_notifyListWait+0x11c						c:/go/src/runtime/sema.go:513
+#	0x478cab	sync.(*Cond).Wait+0x8b								c:/go/src/sync/cond.go:56
+#	0x7519b4	github.com/nats-io/nats-server/v2/server.(*client).writeLoop+0x1f4		D:/project/src/github.com/nats-io/nats-server/server/client.go:997
+#	0x8b7a9c	github.com/nats-io/nats-server/v2/server.(*Server).createRoute.func2+0x1c	D:/project/src/github.com/nats-io/nats-server/server/route.go:1378
+
+1 @ 0x40b734 0x464378 0x72e0f9 0x467ba1
+#	0x464377	os/signal.signal_recv+0x97	c:/go/src/runtime/sigqueue.go:169
+#	0x72e0f8	os/signal.loop+0x18		c:/go/src/os/signal/signal_unix.go:24
+
+1 @ 0x437a96 0x40630c 0x405d38 0x918d0e 0x918cfb 0x4376c7 0x467ba1
+#	0x918d0d	github.com/nats-io/nats-server/v2/server.(*Server).WaitForShutdown+0x32d	D:/project/src/github.com/nats-io/nats-server/server/server.go:1926
+#	0x918cfa	main.main+0x31a									D:/project/src/github.com/nats-io/nats-server/main.go:128
+#	0x4376c6	runtime.main+0x226								c:/go/src/runtime/proc.go:255
+
+1 @ 0x437a96 0x43043e 0x462509 0x4b4f32 0x4b5e9a 0x4b5e88 0x5718a9 0x57d4c5 0x64d32d 0x536043 0x536bef 0x536e47 0x5ea999 0x6493b9 0x6493ba 0x64e6e5 0x6529a5 0x467ba1
+#	0x462508	internal/poll.runtime_pollWait+0x88		c:/go/src/runtime/netpoll.go:229
+#	0x4b4f31	internal/poll.(*pollDesc).wait+0x31		c:/go/src/internal/poll/fd_poll_runtime.go:84
+#	0x4b5e99	internal/poll.(*pollDesc).waitRead+0x259	c:/go/src/internal/poll/fd_poll_runtime.go:89
+#	0x4b5e87	internal/poll.(*FD).Read+0x247			c:/go/src/internal/poll/fd_unix.go:167
+#	0x5718a8	net.(*netFD).Read+0x28				c:/go/src/net/fd_posix.go:56
+#	0x57d4c4	net.(*conn).Read+0x44				c:/go/src/net/net.go:183
+#	0x64d32c	net/http.(*connReader).Read+0x16c		c:/go/src/net/http/server.go:780
+#	0x536042	bufio.(*Reader).fill+0x102			c:/go/src/bufio/bufio.go:101
+#	0x536bee	bufio.(*Reader).ReadSlice+0x2e			c:/go/src/bufio/bufio.go:360
+#	0x536e46	bufio.(*Reader).ReadLine+0x26			c:/go/src/bufio/bufio.go:389
+#	0x5ea998	net/textproto.(*Reader).readLineSlice+0x98	c:/go/src/net/textproto/reader.go:57
+#	0x6493b8	net/textproto.(*Reader).ReadLine+0x78		c:/go/src/net/textproto/reader.go:38
+#	0x6493b9	net/http.readRequest+0x79			c:/go/src/net/http/request.go:1029
+#	0x64e6e4	net/http.(*conn).readRequest+0x224		c:/go/src/net/http/server.go:966
+#	0x6529a4	net/http.(*conn).serve+0x864			c:/go/src/net/http/server.go:1855
+
+1 @ 0x437a96 0x43043e 0x462509 0x4b4f32 0x4b5e9a 0x4b5e88 0x5718a9 0x57d4c5 0x752427 0x8b7ae5 0x467ba1
+#	0x462508	internal/poll.runtime_pollWait+0x88						c:/go/src/runtime/netpoll.go:229
+#	0x4b4f31	internal/poll.(*pollDesc).wait+0x31						c:/go/src/internal/poll/fd_poll_runtime.go:84
+#	0x4b5e99	internal/poll.(*pollDesc).waitRead+0x259					c:/go/src/internal/poll/fd_poll_runtime.go:89
+#	0x4b5e87	internal/poll.(*FD).Read+0x247							c:/go/src/internal/poll/fd_unix.go:167
+#	0x5718a8	net.(*netFD).Read+0x28								c:/go/src/net/fd_posix.go:56
+#	0x57d4c4	net.(*conn).Read+0x44								c:/go/src/net/net.go:183
+#	0x752426	github.com/nats-io/nats-server/v2/server.(*client).readLoop+0x5a6		D:/project/src/github.com/nats-io/nats-server/server/client.go:1134
+#	0x8b7ae4	github.com/nats-io/nats-server/v2/server.(*Server).createRoute.func1+0x24	D:/project/src/github.com/nats-io/nats-server/server/route.go:1375
+
+1 @ 0x437a96 0x43043e 0x462509 0x4b4f32 0x4b6d8c 0x4b6d79 0x572a75 0x586da8 0x5860dd 0x656cb4 0x6568dd 0x918f4a 0x918f4b 0x467ba1
+#	0x462508	internal/poll.runtime_pollWait+0x88		c:/go/src/runtime/netpoll.go:229
+#	0x4b4f31	internal/poll.(*pollDesc).wait+0x31		c:/go/src/internal/poll/fd_poll_runtime.go:84
+#	0x4b6d8b	internal/poll.(*pollDesc).waitRead+0x22b	c:/go/src/internal/poll/fd_poll_runtime.go:89
+#	0x4b6d78	internal/poll.(*FD).Accept+0x218		c:/go/src/internal/poll/fd_unix.go:402
+#	0x572a74	net.(*netFD).accept+0x34			c:/go/src/net/fd_unix.go:173
+#	0x586da7	net.(*TCPListener).accept+0x27			c:/go/src/net/tcpsock_posix.go:140
+#	0x5860dc	net.(*TCPListener).Accept+0x3c			c:/go/src/net/tcpsock.go:262
+#	0x656cb3	net/http.(*Server).Serve+0x393			c:/go/src/net/http/server.go:3001
+#	0x6568dc	net/http.(*Server).ListenAndServe+0x7c		c:/go/src/net/http/server.go:2930
+#	0x918f49	net/http.ListenAndServe+0x109			c:/go/src/net/http/server.go:3184
+#	0x918f4a	main.http_pprof+0x10a				D:/project/src/github.com/nats-io/nats-server/main.go:145
+
+1 @ 0x437a96 0x43043e 0x462509 0x4b4f32 0x4b6d8c 0x4b6d79 0x572a75 0x586da8 0x5860dd 0x656cb4 0x8c8817 0x467ba1
+#	0x462508	internal/poll.runtime_pollWait+0x88						c:/go/src/runtime/netpoll.go:229
+#	0x4b4f31	internal/poll.(*pollDesc).wait+0x31						c:/go/src/internal/poll/fd_poll_runtime.go:84
+#	0x4b6d8b	internal/poll.(*pollDesc).waitRead+0x22b					c:/go/src/internal/poll/fd_poll_runtime.go:89
+#	0x4b6d78	internal/poll.(*FD).Accept+0x218						c:/go/src/internal/poll/fd_unix.go:402
+#	0x572a74	net.(*netFD).accept+0x34							c:/go/src/net/fd_unix.go:173
+#	0x586da7	net.(*TCPListener).accept+0x27							c:/go/src/net/tcpsock_posix.go:140
+#	0x5860dc	net.(*TCPListener).Accept+0x3c							c:/go/src/net/tcpsock.go:262
+#	0x656cb3	net/http.(*Server).Serve+0x393							c:/go/src/net/http/server.go:3001
+#	0x8c8816	github.com/nats-io/nats-server/v2/server.(*Server).startMonitoring.func1+0x56	D:/project/src/github.com/nats-io/nats-server/server/server.go:2243
+
+1 @ 0x437a96 0x447832 0x780206 0x467ba1
+#	0x780205	github.com/nats-io/nats-server/v2/server.(*Server).internalSendLoop+0x385	D:/project/src/github.com/nats-io/nats-server/server/events.go:300
+
+1 @ 0x437a96 0x447832 0x7bf93e 0x467ba1
+#	0x7bf93d	github.com/nats-io/nats-server/v2/server.(*Server).startGWReplyMapExpiration.func1+0x11d	D:/project/src/github.com/nats-io/nats-server/server/gateway.go:3130
+
+1 @ 0x437a96 0x447832 0x7ecb56 0x467ba1
+#	0x7ecb55	github.com/nats-io/nats-server/v2/server.(*jetStream).monitorCluster+0x355	D:/project/src/github.com/nats-io/nats-server/server/jetstream_cluster.go:747
+
+1 @ 0x437a96 0x447832 0x84788b 0x8445e9 0x467ba1
+#	0x84788a	github.com/nats-io/nats-server/v2/server.(*mqttAccountSessionManager).sessPersistProcessing+0x10a	D:/project/src/github.com/nats-io/nats-server/server/mqtt.go:1505
+#	0x8445e8	github.com/nats-io/nats-server/v2/server.(*Server).mqttCreateAccountSessionManager.func3+0x68		D:/project/src/github.com/nats-io/nats-server/server/mqtt.go:1001
+
+1 @ 0x437a96 0x447832 0x848431 0x8446f5 0x467ba1
+#	0x848430	github.com/nats-io/nats-server/v2/server.(*mqttAccountSessionManager).sendJSAPIrequests+0x490	D:/project/src/github.com/nats-io/nats-server/server/mqtt.go:1608
+#	0x8446f4	github.com/nats-io/nats-server/v2/server.(*Server).mqttCreateAccountSessionManager.func2+0x74	D:/project/src/github.com/nats-io/nats-server/server/mqtt.go:995
+
+1 @ 0x437a96 0x447832 0x8bbf05 0x467ba1
+#	0x8bbf04	github.com/nats-io/nats-server/v2/server.(*sendq).internalLoop+0x1e4	D:/project/src/github.com/nats-io/nats-server/server/sendq.go:57
+
+1 @ 0x437a96 0x447832 0x8cf8a7 0x467ba1
+#	0x8cf8a6	github.com/nats-io/nats-server/v2/server.(*Server).handleSignals.func1+0xa6	D:/project/src/github.com/nats-io/nats-server/server/signal.go:47
+
+1 @ 0x437a96 0x464b6e 0x918e15 0x467ba1
+#	0x464b6d	time.Sleep+0x12d		c:/go/src/runtime/time.go:193
+#	0x918e14	main.debug_print_goroutine+0xd4	D:/project/src/github.com/nats-io/nats-server/main.go:134
+
+1 @ 0x437b6d 0x4057a9 0x4055cd 0x406725 0x89dc51 0x75ed50 0x7645ef 0x8b16b9 0x760556 0x88a08a 0x752cba 0x8b7ae5 0x467ba1
+#	0x89dc50	github.com/nats-io/nats-server/v2/server.(*raft).handleAppendEntryResponse+0xf0		D:/project/src/github.com/nats-io/nats-server/server/raft.go:2748
+#	0x75ed4f	github.com/nats-io/nats-server/v2/server.(*client).deliverMsg+0xbaf			D:/project/src/github.com/nats-io/nats-server/server/client.go:3147
+#	0x7645ee	github.com/nats-io/nats-server/v2/server.(*client).processMsgResults+0x9ae		D:/project/src/github.com/nats-io/nats-server/server/client.go:4122
+#	0x8b16b8	github.com/nats-io/nats-server/v2/server.(*client).processInboundRoutedMsg+0x158	D:/project/src/github.com/nats-io/nats-server/server/route.go:443
+#	0x760555	github.com/nats-io/nats-server/v2/server.(*client).processInboundMsg+0x35		D:/project/src/github.com/nats-io/nats-server/server/client.go:3460
+#	0x88a089	github.com/nats-io/nats-server/v2/server.(*client).parse+0x21a9				D:/project/src/github.com/nats-io/nats-server/server/parser.go:477
+#	0x752cb9	github.com/nats-io/nats-server/v2/server.(*client).readLoop+0xe39			D:/project/src/github.com/nats-io/nats-server/server/client.go:1174
+#	0x8b7ae4	github.com/nats-io/nats-server/v2/server.(*Server).createRoute.func1+0x24		D:/project/src/github.com/nats-io/nats-server/server/route.go:1375
+
+1 @ 0x4620a5 0x6ae2f5 0x6ae10d 0x6ab28b 0x6b9e9a 0x6baa4e 0x653b0f 0x655409 0x65673b 0x652c48 0x467ba1
+#	0x4620a4	runtime/pprof.runtime_goroutineProfileWithLabels+0x24	c:/go/src/runtime/mprof.go:746
+#	0x6ae2f4	runtime/pprof.writeRuntimeProfile+0xb4			c:/go/src/runtime/pprof/pprof.go:724
+#	0x6ae10c	runtime/pprof.writeGoroutine+0x4c			c:/go/src/runtime/pprof/pprof.go:684
+#	0x6ab28a	runtime/pprof.(*Profile).WriteTo+0x14a			c:/go/src/runtime/pprof/pprof.go:331
+#	0x6b9e99	net/http/pprof.handler.ServeHTTP+0x499			c:/go/src/net/http/pprof/pprof.go:253
+#	0x6baa4d	net/http/pprof.Index+0x12d				c:/go/src/net/http/pprof/pprof.go:371
+#	0x653b0e	net/http.HandlerFunc.ServeHTTP+0x2e			c:/go/src/net/http/server.go:2046
+#	0x655408	net/http.(*ServeMux).ServeHTTP+0x148			c:/go/src/net/http/server.go:2424
+#	0x65673a	net/http.serverHandler.ServeHTTP+0x43a			c:/go/src/net/http/server.go:2878
+#	0x652c47	net/http.(*conn).serve+0xb07				c:/go/src/net/http/server.go:1929
+
+1 @ 0x467ba1
