@@ -1,0 +1,357 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+
+	"github.com/carr123/fmx"
+
+	"github.com/gomodule/redigo/redis"
+)
+
+/*
+用到3个redis  key
+1. onlinedevices
+类型: sortedset
+作用: 存放所有在线的clientid
+2. onlinenodes
+类型: sortedset
+作用: 存放所有在线的服务器节点心跳
+3. devmeta
+类型: hmap
+作用:  存放所有在线的设备身份数据
+*/
+
+const (
+	SERVER_TIMEOUT = 5 //服务器心跳超时为5秒
+)
+
+type RedisOnlineMgr struct {
+	cachePool     *redis.Pool
+	nodeid        string
+	ch            chan string
+	lastHeartbeat time.Time
+}
+
+func NewRedisOnlineMgr() *RedisOnlineMgr {
+	return &RedisOnlineMgr{
+		ch: make(chan string, 1),
+	}
+}
+
+func (t *RedisOnlineMgr) Init() error {
+	var err error
+
+	server := vpConf.GetString("redis.addr")
+
+	t.cachePool = &redis.Pool{
+		MaxIdle:     1,
+		IdleTimeout: 50 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.Dial("tcp", server)
+			if err != nil {
+				return nil, err
+			}
+			return c, err
+		},
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			_, err := c.Do("PING")
+			return err
+		},
+	}
+
+	t.nodeid, err = t.allocServerID()
+	if err != nil {
+		return err
+	}
+
+	if _, err := t.setServerHeartbeat(); err != nil {
+		return err
+	}
+
+	go t._nodeheartbeatLoop()
+	go t._cleanDeadNodeLoop()
+
+	return nil
+}
+
+func (t *RedisOnlineMgr) allocServerID() (string, error) {
+	var script = redis.NewScript(1, `
+	 for i=100,999 do  
+	    local newID = tostring(i)
+ 		local score = redis.call('ZSCORE', KEYS[1], newID)
+		if not score then
+		   return newID
+		end
+     end
+	`)
+
+	conn := t.cachePool.Get()
+	defer conn.Close()
+
+	return redis.String(script.Do(conn, "onlinenodes"))
+}
+
+//本机设备上线写缓存, 发通知
+func (t *RedisOnlineMgr) SetDevOnline(info []byte, ClientID string) {
+	for {
+		if time.Now().Sub(t.lastHeartbeat) > time.Second*2 {
+			time.Sleep(time.Millisecond * 200) //redis访问优先权让给心跳
+			continue
+		} else {
+			break
+		}
+	}
+
+	var scriptOnline = redis.NewScript(2, `
+	 local info = redis.call('HGET', KEYS[2], ARGV[1])
+	
+	 score = tonumber(ARGV[2])
+	 redis.call('ZADD', KEYS[1], score, ARGV[1])
+	 redis.call('HSET', KEYS[2], ARGV[1], ARGV[3])
+	
+	 return info	
+	`)
+
+	score := fmt.Sprintf("%s%d", t.nodeid, time.Now().Unix())
+
+	conn := t.cachePool.Get()
+	defer conn.Close()
+
+	oldinfo, err := redis.String(scriptOnline.Do(conn, "onlinedevices", "devmeta", ClientID, score, string(info)))
+	if err != nil {
+		WriteErrLog(fmx.Error(err, 400))
+		return
+	}
+
+	t._notifyOffline([]byte(oldinfo), time.Now().UnixMilli(), "unknown")
+	t._notifyOnline([]byte(info))
+}
+
+//本机设备下线删缓存, 发通知
+func (t *RedisOnlineMgr) SetDevOffline(info []byte, ClientID string) {
+	for {
+		if time.Now().Sub(t.lastHeartbeat) > time.Second*2 {
+			time.Sleep(time.Millisecond * 200) //redis访问优先权让给心跳
+			continue
+		} else {
+			break
+		}
+	}
+
+	//设备下线时操作，返回1时表示确实删除了设备， 返回0时表示设备不存在
+	var script = redis.NewScript(2, `
+	 local score = redis.call('ZSCORE', KEYS[1], ARGV[1])
+	 if not score then
+		return 0
+	 elseif tonumber(score) / 1e10 == tonumber(ARGV[2]) then
+		redis.call('ZREM', KEYS[1], ARGV[1])
+		redis.call('HDEL', KEYS[2], ARGV[1])
+	    return 1
+	 else
+		return 0
+	 end
+	`)
+
+	conn := t.cachePool.Get()
+	defer conn.Close()
+
+	nExist, err := redis.Int64(script.Do(conn, "onlinedevices", "devmeta", ClientID, t.nodeid))
+	if err != nil {
+		WriteErrLog(fmx.Error(err, 400))
+		return
+	}
+
+	if nExist == 1 {
+		t._notifyOffline(info, 0, "")
+	}
+}
+
+func (t *RedisOnlineMgr) setServerHeartbeat() ([]string, error) {
+	var script = redis.NewScript(1, `
+	 local score = tonumber(ARGV[2])
+	 redis.call('ZADD', KEYS[1], score, ARGV[1])
+
+	 local scoremin = 0
+	 local scoremax = tonumber(ARGV[3])
+	 local items = redis.call('ZRANGEBYSCORE', KEYS[1], scoremin, scoremax, 'limit', 0, 1)
+
+	 return items
+	`)
+
+	conn := t.cachePool.Get()
+	defer conn.Close()
+
+	reply, err := script.Do(conn, "onlinenodes", nodeid, time.Now().Unix(), time.Now().Unix()-SERVER_TIMEOUT)
+	t.lastHeartbeat = time.Now()
+
+	return redis.Strings(reply, err)
+}
+
+func (t *RedisOnlineMgr) _nodeheartbeatLoop() {
+	do := func() {
+		defer Recover()
+
+		for {
+			time.Sleep(time.Second * 2)
+			deadNodes, err := t.setServerHeartbeat()
+			if err != nil {
+				WriteErrLog(err)
+				continue
+			}
+
+			if len(t.ch) == 0 && len(deadNodes) > 0 {
+				t.ch <- deadNodes[0]
+			}
+		}
+	}
+
+	for {
+		do()
+		time.Sleep(time.Second)
+	}
+}
+
+func (t *RedisOnlineMgr) _cleanDeadNodeLoop() {
+	defer Recover()
+
+	for nodeid := range t.ch {
+		t.cleanDeadNode(nodeid)
+	}
+}
+
+//处理宕机的节点,发送设备下线消息
+func (t *RedisOnlineMgr) cleanDeadNode(nodeid string) {
+	defer Recover()
+
+	fetch := func() ([]string, error) {
+		var script = redis.NewScript(3, `
+		 local heartbeat = redis.call('ZSCORE', KEYS[2], ARGV[1])
+		 if heartbeat then
+			if tonumber(heartbeat) > tonumber(ARGV[2]) then
+				return {}
+			end
+		 end
+		
+		 local scoremin = tonumber(ARGV[1]) * 1e10
+		 local scoremax = (tonumber(ARGV[1])+1) * 1e10 - 1
+		 local items = redis.call('ZRANGEBYSCORE', KEYS[1], scoremin, scoremax, 'limit', 0, 500)
+	
+		 local devinfo = {}
+	     for i, clientid in pairs(items) do
+	        redis.call('ZREM', KEYS[1], clientid)
+			local info = redis.call('HGET', KEYS[3], clientid)
+			if not info then
+				devinfo[i] = info
+			else
+				devinfo[i] = ""		
+			end
+			redis.call('HDEL', KEYS[3], clientid)
+	     end
+	    
+	     if #items == 0 then
+	    	redis.call('ZREM', KEYS[2], ARGV[1])
+	     end
+	
+		 return devinfo	
+		`)
+
+		conn := t.cachePool.Get()
+		defer conn.Close()
+
+		reply, err := script.Do(conn, "onlinedevices", "onlinenodes", "devmeta", nodeid, time.Now().Unix()-SERVER_TIMEOUT)
+		return redis.Strings(reply, err)
+	}
+
+	for {
+		if time.Now().Sub(t.lastHeartbeat) > time.Second*2 {
+			time.Sleep(time.Millisecond * 50) //redis访问优先权让给心跳
+			continue
+		}
+
+		devs, err := fetch()
+		if err != nil {
+			WriteErrLog(err)
+			break
+		}
+
+		if len(devs) == 0 {
+			break
+		}
+
+		leavetimems := time.Now().Add(-time.Second * SERVER_TIMEOUT).UnixMilli()
+
+		for _, info := range devs {
+			t._notifyOffline([]byte(info), leavetimems, "server down")
+		}
+
+		time.Sleep(time.Millisecond * 50)
+	}
+
+	return
+}
+
+//广播设备下线消息
+func (t *RedisOnlineMgr) _notifyOffline(info []byte, leavetimems int64, reason string) {
+	if len(info) == 0 {
+		return
+	}
+
+	var dev struct {
+		Ev          string `json:"ev"`
+		ProductID   string `json:"productid"`
+		ClientID    string `json:"clientid"`
+		ConnUUID    string `json:"connuuid"`
+		UserName    string `json:"username"`
+		ClientAddr  string `json:"clientaddr"`
+		ConnTimems  int64  `json:"conntimems"`
+		LeaveTimems int64  `json:"leavetimems"`
+		Reason      string `json:"reason"`
+	}
+
+	if err := json.Unmarshal([]byte(info), &dev); err != nil {
+		WriteErrLog(fmx.Error(err, 400))
+		return
+	}
+
+	dev.Ev = "offline"
+
+	if leavetimems > 0 {
+		dev.LeaveTimems = leavetimems
+	}
+
+	if len(reason) > 0 {
+		dev.Reason = reason
+	}
+
+	subject := fmt.Sprintf("%s.MQTT.ONOFFLINE", dev.ProductID)
+	natsConn.Publish(subject, toJsonBin(dev))
+}
+
+//广播设备上线消息
+func (t *RedisOnlineMgr) _notifyOnline(info []byte) {
+	if len(info) == 0 {
+		return
+	}
+
+	var dev struct {
+		Ev         string `json:"ev"`
+		ProductID  string `json:"productid"`
+		ClientID   string `json:"clientid"`
+		ConnUUID   string `json:"connuuid"`
+		UserName   string `json:"username"`
+		ClientAddr string `json:"clientaddr"`
+		ConnTimems int64  `json:"conntimems"`
+	}
+
+	if err := json.Unmarshal([]byte(info), &dev); err != nil {
+		WriteErrLog(fmx.Error(err, 400))
+		return
+	}
+
+	dev.Ev = "online"
+
+	subject := fmt.Sprintf("%s.MQTT.ONOFFLINE", dev.ProductID)
+	natsConn.Publish(subject, toJsonBin(dev))
+}
